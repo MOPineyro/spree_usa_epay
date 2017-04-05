@@ -54,7 +54,7 @@ module SpreeUsaEpay
     def capture(amount, response_code, gateway_options)
       response = request(:capture_transaction, { 'Token' => security_token(gateway_options),
                                                  'RefNum' => response_code,
-                                                 'Amount' => amount })
+                                                 'Amount' => double_money(amount) })
       billing_response response[:capture_transaction_response][:capture_transaction_return]
     end
 
