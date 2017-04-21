@@ -208,6 +208,8 @@ module SpreeUsaEpay
       { 'Command' => 'Sale',
         'ClientIP' => gateway_options[:ip],
         'isRecurring' => false,
+        'CardCode' => creditcard.verification_value,
+        'BillingAddress' => address_hash(creditcard, gateway_options, :billing_address),
         'Details' => transaction_details(amount, creditcard, gateway_options) }
     end
 
@@ -215,6 +217,8 @@ module SpreeUsaEpay
       { 'Command' => 'Credit',
         'ClientIP' => gateway_options[:ip],
         'isRecurring' => false,
+        'CardCode' => creditcard.verification_value,
+        'BillingAddress' => address_hash(creditcard, gateway_options, :billing_address),
         'Details' => credit_transaction_details(amount, creditcard, gateway_options) }
     end
 
