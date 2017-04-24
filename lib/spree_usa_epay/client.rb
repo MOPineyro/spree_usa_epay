@@ -155,14 +155,14 @@ module SpreeUsaEpay
      {  'AccountHolder' => creditcard.name,
         'ClientIP' => gateway_options[:ip],
         'Details' => transaction_details(amount, creditcard, gateway_options),
+        'CardCode' => creditcard.verification_value,
         'BillingAddress' => address_hash(creditcard, gateway_options, :billing_address),
         'ShippingAddress' => address_hash(creditcard, gateway_options, :shipping_address),
         'CreditCardData' => {
           'CardNumber' => creditcard.number,
           'CardExpiration' => expiration_date(creditcard),
           'AvsStreet' => gateway_options[:billing_address][:address1],
-          'AvsZip' => gateway_options[:billing_address][:zip],
-          'CardCode' => creditcard.verification_value } }
+          'AvsZip' => gateway_options[:billing_address][:zip] } }
     end
 
     #http://wiki.usaepay.com/developer/soap-1.4/objects/transactiondetail
