@@ -161,6 +161,7 @@ module SpreeUsaEpay
         'CreditCardData' => {
           'CardNumber' => creditcard.number,
           'CardExpiration' => expiration_date(creditcard),
+          'CardCode' => creditcard.verification_value,
           'AvsStreet' => gateway_options[:billing_address][:address1],
           'AvsZip' => gateway_options[:billing_address][:zip] } }
     end
