@@ -101,6 +101,11 @@ module SpreeUsaEpay
       request['Command'] = command
       request["CardCode"] = creditcard.verification_value
 
+      puts "fuuuuuuuuu"
+      puts creditcard
+      puts request
+      puts "fuuuuuuuuu"
+
       response = request(:run_customer_transaction,{"Token" => token,
                                                     "CustNum" => creditcard.gateway_customer_profile_id,
                                                     "PaymentMethodID" => creditcard.gateway_payment_profile_id,
