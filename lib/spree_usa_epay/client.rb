@@ -7,6 +7,7 @@ module SpreeUsaEpay
       @pin = options[:pin]
       @test_mode = options[:test_mode]
       @client = Savon::Client.new(soap_url)
+      Savon.client(filters: [:card_number])
     end
 
     def request(name, body)
