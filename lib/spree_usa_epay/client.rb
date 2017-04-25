@@ -118,7 +118,7 @@ module SpreeUsaEpay
       options = {
         :authorization => response[:ref_num],
         :avs_result => { :code => response[:avs_result_code].to_s },
-        :cvv_result => response[:card_code_result_code],
+        :cvv_result => response[:card_code_result_code].to_s,
         :test => @test_mode
       }
 
