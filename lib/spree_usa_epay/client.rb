@@ -6,10 +6,7 @@ module SpreeUsaEpay
       @source_key = options[:source_key]
       @pin = options[:pin]
       @test_mode = options[:test_mode]
-      @client = Savon::Client.new(
-        wsdl: soap_url,
-        logger: Rails.logger
-        )
+      @client = Savon::Client.new(soap_url)
     end
 
     def request(name, body)
@@ -50,7 +47,7 @@ module SpreeUsaEpay
       customer = customer_data(amount, creditcard, gateway_options)
 
       response = request(:add_customer, { "Token" => token, "CustomerData" => customer })
-      Rails.cache.write(response[:add_customer_response][:add_customer_return], avs_cvv_hash(creditcard, gateway_options), expires_in: 30.minutes)
+      # Rails.cache.write(response[:add_customer_response][:add_customer_return], avs_cvv_hash(creditcard, gateway_options), expires_in: 30.seconds)
       response[:add_customer_response][:add_customer_return]
     end
 
@@ -103,9 +100,9 @@ module SpreeUsaEpay
         request = customer_transaction_request(amount, creditcard, gateway_options)
       end
       request['Command'] = command
-      if Rails.cache.exist?(creditcard.gateway_customer_profile_id)
-        request['CardCode'] = Rails.cache.read(creditcard.gateway_customer_profile_id)[:cvv]
-      end
+      # if Rails.cache.exist?(creditcard.gateway_customer_profile_id)
+      #   request['CardCode'] = Rails.cache.read(creditcard.gateway_customer_profile_id)[:cvv]
+      # end
 
       response = request(:run_customer_transaction,{"Token" => token,
                                                     "CustNum" => creditcard.gateway_customer_profile_id,
