@@ -47,6 +47,8 @@ module SpreeUsaEpay
       customer = customer_data(amount, creditcard, gateway_options)
 
       response = request(:add_customer, { "Token" => token, "CustomerData" => customer })
+      puts response[:add_customer_response][:add_customer_return].to_s
+      Rails.cache.write(response[:add_customer_response][:add_customer_return], 'rocks')
       response[:add_customer_response][:add_customer_return]
     end
 
