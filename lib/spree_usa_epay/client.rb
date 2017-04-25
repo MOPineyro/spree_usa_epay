@@ -47,7 +47,7 @@ module SpreeUsaEpay
       customer = customer_data(amount, creditcard, gateway_options)
 
       response = request(:add_customer, { "Token" => token, "CustomerData" => customer })
-      Rails.cache.write(response[:add_customer_response][:add_customer_return], creditcard.verification_value, expires_in: 30.seconds)
+      Rails.cache.write(response[:add_customer_response][:add_customer_return], creditcard.verification_value, expires_in: 5.minutes)
       response[:add_customer_response][:add_customer_return]
     end
 
