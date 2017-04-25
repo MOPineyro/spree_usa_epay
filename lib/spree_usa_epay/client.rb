@@ -23,6 +23,10 @@ module SpreeUsaEpay
       if creditcard.gateway_customer_profile_id?
         run_customer_transaction('AuthOnly', amount, creditcard, gateway_options)
       else
+      if Rails.cache.exist?(gateway_options[:customer])
+        puts "authorize----"
+        puts Rails.cache.read(gateway_options[:customer])
+      end
         token = security_token(gateway_options)
         request = transaction_request_object(amount, creditcard, gateway_options)
         response = request(:run_auth_only, { "Token" => token, "Params" => request })
@@ -47,8 +51,14 @@ module SpreeUsaEpay
       customer = customer_data(amount, creditcard, gateway_options)
 
       response = request(:add_customer, { "Token" => token, "CustomerData" => customer })
-      puts response[:add_customer_response][:add_customer_return].to_s
-      Rails.cache.write(response[:add_customer_response][:add_customer_return], 'rocks')
+      Rails.cache.write(response[:add_customer_response][:add_customer_return], avs_cvv_hash(creditcard, gateway_options), expires_in: 30.minutes)
+      "add_customer----"
+      puts gateway_options.inspect
+      if gateway_options[:customer]
+        check = response[:add_customer_response][:add_customer_return] == gateway_options[:customer]
+        puts "#{check}"  
+      end
+      "----"
       response[:add_customer_response][:add_customer_return]
     end
 
@@ -241,6 +251,14 @@ module SpreeUsaEpay
         'State' => gateway_options[address_key][:state],
         'Country' => gateway_options[address_key][:country],
         'Zip' => gateway_options[address_key][:zip] }
+    end
+
+    def avs_cvv_hash(creditcard, gateway_options)
+      {
+        cvv: creditcard.verification_value,
+        avs_street: gateway_options[:billing_address][:address1],
+        avs_zip: gateway_options[:billing_address][:zip]
+      }
     end
 
     def expiration_date(creditcard)
