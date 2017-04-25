@@ -23,10 +23,6 @@ module SpreeUsaEpay
       if creditcard.gateway_customer_profile_id?
         run_customer_transaction('AuthOnly', amount, creditcard, gateway_options)
       else
-      if Rails.cache.exist?(gateway_options[:customer])
-        puts "authorize----"
-        puts Rails.cache.read(gateway_options[:customer])
-      end
         token = security_token(gateway_options)
         request = transaction_request_object(amount, creditcard, gateway_options)
         response = request(:run_auth_only, { "Token" => token, "Params" => request })
@@ -52,13 +48,6 @@ module SpreeUsaEpay
 
       response = request(:add_customer, { "Token" => token, "CustomerData" => customer })
       Rails.cache.write(response[:add_customer_response][:add_customer_return], avs_cvv_hash(creditcard, gateway_options), expires_in: 30.minutes)
-      "add_customer----"
-      puts gateway_options.inspect
-      if gateway_options[:customer]
-        check = response[:add_customer_response][:add_customer_return] == gateway_options[:customer]
-        puts "#{check}"  
-      end
-      "----"
       response[:add_customer_response][:add_customer_return]
     end
 
@@ -111,7 +100,9 @@ module SpreeUsaEpay
         request = customer_transaction_request(amount, creditcard, gateway_options)
       end
       request['Command'] = command
-      request["CardCode"] = creditcard.verification_value
+      if Rails.cache.exist?(creditcard.gateway_customer_profile_id)
+        request['CardCode'] = Rails.cache.read(creditcard.gateway_customer_profile_id)[:cvv]
+      end
 
       response = request(:run_customer_transaction,{"Token" => token,
                                                     "CustNum" => creditcard.gateway_customer_profile_id,
@@ -124,7 +115,7 @@ module SpreeUsaEpay
       options = {
         :authorization => response[:ref_num],
         :avs_result => { :code => response[:avs_result_code].to_s },
-        :cvv_result => response[:card_code_result],
+        :cvv_result => response[:card_code_result_code],
         :test => @test_mode
       }
 
@@ -222,7 +213,6 @@ module SpreeUsaEpay
       { 'Command' => 'Sale',
         'ClientIP' => gateway_options[:ip],
         'isRecurring' => false,
-        'CardCode' => creditcard.verification_value,
         'BillingAddress' => address_hash(creditcard, gateway_options, :billing_address),
         'Details' => transaction_details(amount, creditcard, gateway_options) }
     end
