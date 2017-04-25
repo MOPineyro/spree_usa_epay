@@ -100,6 +100,10 @@ module SpreeUsaEpay
       end
       request['Command'] = command
 
+      puts "--------"
+      inspect creditcard
+      puts "--------"
+
       response = request(:run_customer_transaction,{"Token" => token,
                                                     "CustNum" => creditcard.gateway_customer_profile_id,
                                                     "PaymentMethodID" => creditcard.gateway_payment_profile_id,
@@ -209,6 +213,7 @@ module SpreeUsaEpay
         'ClientIP' => gateway_options[:ip],
         'isRecurring' => false,
         'BillingAddress' => address_hash(creditcard, gateway_options, :billing_address),
+        'CardCode' => creditcard.verification_value,
         'Details' => transaction_details(amount, creditcard, gateway_options) }
     end
 
@@ -217,6 +222,7 @@ module SpreeUsaEpay
         'ClientIP' => gateway_options[:ip],
         'isRecurring' => false,
         'BillingAddress' => address_hash(creditcard, gateway_options, :billing_address),
+        'CardCode' => creditcard.verification_value,
         'Details' => credit_transaction_details(amount, creditcard, gateway_options) }
     end
 
