@@ -50,7 +50,7 @@ module SpreeUsaEpay
       response[:add_customer_response][:add_customer_return]
     end
 
-    #http://wiki.usaepay.com/developer/soap-1.4/methods/runcustomertransaction
+    #http://wiki.usaepay.com/developer/soap-1.6/methods/runcustomertransaction
     def capture(amount, response_code, gateway_options)
       response = request(:capture_transaction, { 'Token' => security_token(gateway_options),
                                                  'RefNum' => response_code,
@@ -83,11 +83,11 @@ module SpreeUsaEpay
       if @test_mode
         "https://sandbox.usaepay.com/soap/gate/DFBAABC3/usaepay.wsdl"
       else
-        "https://www.usaepay.com/soap/gate/DFBAABC3/usaepay.wsdl"
+        "https://www.usaepay.com/soap/gate/0AE595C1/usaepay.wsdl"
       end
     end
 
-    #http://wiki.usaepay.com/developer/soap-1.4/methods/runcustomertransaction
+    #http://wiki.usaepay.com/developer/soap-1.6/methods/runcustomertransaction
     # Commands are Sale, AuthOnly, Credit, Check and CheckCredit
     def run_customer_transaction(command, amount, creditcard, gateway_options)
       return unless creditcard.gateway_customer_profile_id?
@@ -99,12 +99,6 @@ module SpreeUsaEpay
         request = customer_transaction_request(amount, creditcard, gateway_options)
       end
       request['Command'] = command
-      request["CardCode"] = creditcard.verification_value
-
-      puts "fuuuuuuuuu"
-      puts creditcard
-      puts request
-      puts "fuuuuuuuuu"
 
       response = request(:run_customer_transaction,{"Token" => token,
                                                     "CustNum" => creditcard.gateway_customer_profile_id,
@@ -139,7 +133,7 @@ module SpreeUsaEpay
       ActiveMerchant::Billing::Response.new(success, message, {}, options)
     end
 
-    #http://wiki.usaepay.com/developer/soap-1.4/objects/uesecuritytoken
+    #http://wiki.usaepay.com/developer/soap-1.6/objects/uesecuritytoken
     def security_token(gateway_options)
       t = Time.now
       hash = Hash.new
@@ -156,12 +150,11 @@ module SpreeUsaEpay
       token
     end
 
-    #http://wiki.usaepay.com/developer/soap-1.4/objects/transactionrequestobject
+    #http://wiki.usaepay.com/developer/soap-1.6/objects/transactionrequestobject
     def transaction_request_object(amount, creditcard, gateway_options)
      {  'AccountHolder' => creditcard.name,
         'ClientIP' => gateway_options[:ip],
         'Details' => transaction_details(amount, creditcard, gateway_options),
-        'CardCode' => creditcard.verification_value,
         'BillingAddress' => address_hash(creditcard, gateway_options, :billing_address),
         'ShippingAddress' => address_hash(creditcard, gateway_options, :shipping_address),
         'CreditCardData' => {
@@ -172,7 +165,7 @@ module SpreeUsaEpay
           'AvsZip' => gateway_options[:billing_address][:zip] } }
     end
 
-    #http://wiki.usaepay.com/developer/soap-1.4/objects/transactiondetail
+    #http://wiki.usaepay.com/developer/soap-1.6/objects/transactiondetail
     def transaction_details(amount, creditcard, gateway_options)
       { 'Description' => gateway_options[:customer],
         'Amount' => double_money(amount),
@@ -194,7 +187,7 @@ module SpreeUsaEpay
         'OrderID'     => gateway_options[:order_id] }
     end
 
-    #http://wiki.usaepay.com/developer/soap-1.4/objects/customerobject
+    #http://wiki.usaepay.com/developer/soap-1.6/objects/customerobject
     def customer_data(amount, creditcard, gateway_options)
       { 'Amount' => double_money(amount),
         'Enabled' => false,
@@ -210,12 +203,11 @@ module SpreeUsaEpay
                                                  }] }
     end
 
-    #http://wiki.usaepay.com/developer/soap-1.4/objects/customertransactionrequest
+    #http://wiki.usaepay.com/developer/soap-1.6/objects/customertransactionrequest
     def customer_transaction_request(amount, creditcard, gateway_options)
       { 'Command' => 'Sale',
         'ClientIP' => gateway_options[:ip],
         'isRecurring' => false,
-        'CardCode' => creditcard.verification_value,
         'BillingAddress' => address_hash(creditcard, gateway_options, :billing_address),
         'Details' => transaction_details(amount, creditcard, gateway_options) }
     end
@@ -224,7 +216,6 @@ module SpreeUsaEpay
       { 'Command' => 'Credit',
         'ClientIP' => gateway_options[:ip],
         'isRecurring' => false,
-        'CardCode' => creditcard.verification_value,
         'BillingAddress' => address_hash(creditcard, gateway_options, :billing_address),
         'Details' => credit_transaction_details(amount, creditcard, gateway_options) }
     end
