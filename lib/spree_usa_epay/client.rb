@@ -7,8 +7,7 @@ module SpreeUsaEpay
       @pin = options[:pin]
       @test_mode = options[:test_mode]
       @client = Savon::Client.new(
-        wsdl: soap_url, 
-        filters: ["CardNumber", "CardExpiration"], 
+        wsdl: soap_url,
         logger: Rails.logger
         )
     end
