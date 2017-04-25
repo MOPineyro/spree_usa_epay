@@ -101,7 +101,7 @@ module SpreeUsaEpay
       request['Command'] = command
 
       puts "--------"
-      inspect creditcard
+      puts creditcard.inspect
       puts "--------"
 
       response = request(:run_customer_transaction,{"Token" => token,
